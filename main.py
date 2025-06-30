@@ -41,6 +41,10 @@ def main():
         for c in drawable:
             c.draw(screen)
         for a in spacerocks:
+            for b in projectiles:
+                if a.collision(b):
+                    a.split()
+                    b.kill()
             if player.collision(a):
                 print(f"Game Over!")
                 exit()
