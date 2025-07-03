@@ -1,9 +1,11 @@
 import pygame
+import moderngl
 from constants import *
 from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from shot import Shot
+from shaders import *
 
 def main():
  
@@ -11,14 +13,14 @@ def main():
     print(f"Screen width: {SCREEN_WIDTH}")
     print(f"Screen height: {SCREEN_HEIGHT}")
 
+    img = pygame.image.load('img.png')
+
     pygame.init()
 
     updateable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
     spacerocks = pygame.sprite.Group()
     projectiles = pygame.sprite.Group()
-
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     
     clock = pygame.time.Clock()
     dt = 0
@@ -29,17 +31,38 @@ def main():
 
     player = Player(x=SCREEN_WIDTH/2, y=SCREEN_HEIGHT/2)
     asteroidfield = AsteroidField()
+    
+    t = 0
+    is_running = True
+    while is_running:
+        
+        dt = clock.tick(60) / 1000
+        t += 1
 
-    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return
+                is_running = False
 
-        screen.fill("black")
         
         updateable.update(dt)
-        for c in drawable:
-            c.draw(screen)
+
+        
+        # drawing
+        display.fill((0, 0, 0))
+        display.blit(img, pygame.mouse.get_pos())
+
+        ## shaders
+        frame_tex = surf_to_texture(display)
+        frame_tex.use(0)
+        program['tex'] = 0
+        program['time'] = t
+        render_object.render(mode=moderngl.TRIANGLE_STRIP)
+        
+
+
+        # doesn´t work
+        #for c in drawable:
+        #    c.draw(display)
         for a in spacerocks:
             for b in projectiles:
                 if a.collision(b):
@@ -50,10 +73,11 @@ def main():
                 exit()
 
 
-
+        # flips the display where on one side we render and the other we display (DOUBLEBUF)
         pygame.display.flip()
-        dt = clock.tick(60) / 1000
         
+        # free up texture as we create a new one each loop
+        frame_tex.release()
 
 
 
