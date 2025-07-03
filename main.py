@@ -13,8 +13,6 @@ def main():
     print(f"Screen width: {SCREEN_WIDTH}")
     print(f"Screen height: {SCREEN_HEIGHT}")
 
-    img = pygame.image.load('img.png')
-
     pygame.init()
 
     updateable = pygame.sprite.Group()
@@ -49,7 +47,6 @@ def main():
         
         # drawing
         display.fill((0, 0, 0))
-        display.blit(img, pygame.mouse.get_pos())
 
         ## display surface
         for c in drawable:
