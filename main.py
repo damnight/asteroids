@@ -51,6 +51,11 @@ def main():
         display.fill((0, 0, 0))
         display.blit(img, pygame.mouse.get_pos())
 
+        ## display surface
+        for c in drawable:
+            c.draw(display)
+
+
         ## shaders
         frame_tex = surf_to_texture(display)
         frame_tex.use(0)
@@ -58,11 +63,6 @@ def main():
         program['time'] = t
         render_object.render(mode=moderngl.TRIANGLE_STRIP)
         
-
-
-        # doesn´t work
-        #for c in drawable:
-        #    c.draw(display)
         for a in spacerocks:
             for b in projectiles:
                 if a.collision(b):

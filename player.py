@@ -1,4 +1,5 @@
 import pygame
+import moderngl
 from circleshape import CircleShape
 from constants import *
 from shot import Shot
@@ -18,8 +19,11 @@ class Player(CircleShape):
         c = self.position - forward * self.radius + right
         return [a, b, c]
     
-    def draw(self, screen):
-        pygame.draw.polygon(screen, (255, 255, 255), self.triangle(), 2)
+    def draw(self, surf):
+        pygame.draw.polygon(surf, (255, 255, 255), self.triangle(), 2)
+
+
+
 
     def rotate(self, dt):
         self.rotation += PLAYER_TURN_SPEED * dt
