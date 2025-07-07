@@ -25,18 +25,22 @@ def main():
     clock = pygame.time.Clock()
     dt = 0
     Player.containers = (updateable, drawable)
-    Asteroid.containers = (updateable, drawable, spacerocks)
-    AsteroidField.containers = (updateable)
+#    Asteroid.containers = (updateable, drawable, spacerocks)
+#    AsteroidField.containers = (updateable)
     Shot.containers = (updateable, drawable, projectiles)
     Slash.containers = (updateable, drawable, single_use)
 
     player = Player(x=SCREEN_WIDTH/2, y=SCREEN_HEIGHT/2)
-    asteroidfield = AsteroidField()
+#    asteroidfield = AsteroidField()
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return
+                return 
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LCTRL] and keys[pygame.K_x]:
+            exit()
 
         screen.fill("black")
         
