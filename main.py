@@ -20,19 +20,20 @@ def main():
     projectiles = pygame.sprite.Group()
     single_use = pygame.sprite.Group()
     delayed_kill = pygame.sprite.Group()
+    attacks = pygame.sprite.Group()
 
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     
     clock = pygame.time.Clock()
     dt = 0
     Player.containers = (updateable, drawable)
-#    Asteroid.containers = (updateable, drawable, spacerocks)
-#    AsteroidField.containers = (updateable)
+    Asteroid.containers = (updateable, drawable, spacerocks)
+    AsteroidField.containers = (updateable)
     Shot.containers = (updateable, drawable, projectiles)
-    Slash.containers = (updateable, drawable, delayed_kill)
+    Slash.containers = (updateable, drawable, delayed_kill, attacks)
 
     player = Player(x=SCREEN_WIDTH/2, y=SCREEN_HEIGHT/2)
-#    asteroidfield = AsteroidField()
+    asteroidfield = AsteroidField()
 
     while True:
         for event in pygame.event.get():
@@ -44,7 +45,7 @@ def main():
             exit()
 
         screen.fill("black")
-        
+
         updateable.update(dt)
         for c in drawable:
             c.draw(screen)
@@ -53,6 +54,10 @@ def main():
                 if a.collision(b):
                     a.split()
                     b.kill()
+            for atk in attacks:
+                if a.collision(atk):
+                    a.split()
+
             if player.collision(a):
                 print(f"Game Over!")
                 exit()
