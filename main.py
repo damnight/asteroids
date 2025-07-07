@@ -19,6 +19,7 @@ def main():
     spacerocks = pygame.sprite.Group()
     projectiles = pygame.sprite.Group()
     single_use = pygame.sprite.Group()
+    delayed_kill = pygame.sprite.Group()
 
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     
@@ -28,7 +29,7 @@ def main():
 #    Asteroid.containers = (updateable, drawable, spacerocks)
 #    AsteroidField.containers = (updateable)
     Shot.containers = (updateable, drawable, projectiles)
-    Slash.containers = (updateable, drawable, single_use)
+    Slash.containers = (updateable, drawable, delayed_kill)
 
     player = Player(x=SCREEN_WIDTH/2, y=SCREEN_HEIGHT/2)
 #    asteroidfield = AsteroidField()
@@ -62,7 +63,11 @@ def main():
 
         dt = clock.tick(60) / 1000
         
+        for s in single_use:
+            s.kill()
 
+        for d in delayed_kill:
+            d.kill_delayed(dt)
 
 
 

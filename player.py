@@ -23,6 +23,7 @@ class Player(CircleShape):
         return [a, b, c]
     
     def draw(self, screen):
+        pygame.draw.polygon(screen, (50, 50, 50), self.triangle(), width=1)
         pygame.draw.circle(screen, (0, 255, 0), radius=PLAYER_RADIUS, center=self.position, width=2)
 
     def rotate(self, dt):
@@ -30,6 +31,7 @@ class Player(CircleShape):
 
     def update(self, dt):
         self.shot_cd -= dt
+        self.slash_cd -= dt
 
         keys = pygame.key.get_pressed()
 
@@ -63,6 +65,7 @@ class Player(CircleShape):
             return
         else:
             self.slash_cd = PLAYER_SLASH_COOLDOWN
-            x, y = self.position
+            forward = pygame.Vector2(0, 1).rotate(self.rotation)
+            x, y = self.position + forward * self.radius
             slash = Slash(x, y, self.rotation)
             slash.velocity = pygame.Vector2(0,1).rotate(self.rotation) * PLAYER_SLASH_SPEED
