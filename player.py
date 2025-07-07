@@ -29,22 +29,48 @@ class Player(CircleShape):
     def rotate(self, dt):
         self.rotation += PLAYER_TURN_SPEED * dt
 
+    def set_rotation(self):
+        x, y = pygame.mouse.get_pos()
+        u, v = self.position
+
+        angle = np.cos((x * u + y * v) / np.sqrt(x*x + y*y) * np.sqrt(u*u + v*v))
+
+        print(angle * 180/np.pi)
+
+        self.rotation = angle * 180/np.pi
+
+
     def update(self, dt):
         self.shot_cd -= dt
         self.slash_cd -= dt
 
-        keys = pygame.key.get_pressed()
+        self.set_rotation()
 
+        keys = pygame.key.get_pressed()
+        
         if keys[pygame.K_a]:
-            self.rotate(dt * (-1))
+            self.strife(dt * (-1))
         if keys[pygame.K_d]:
-            self.rotate(dt * (+1))
+            self.strife(dt)
+
+#       if keys[pygame.K_w] and keys[pygame.K_a]:
+#           self.rotate(dt * (-1))
+#           self.move(dt)
+#       if keys[pygame.K_w] and keys[pygame.K_d]:
+#           self.rotate(dt)
+#           self.move(dt)
+        
         if keys[pygame.K_w]:
             self.move(dt)
         if keys[pygame.K_s]:
             self.move(dt * (-1))
+        
         if keys[pygame.K_SPACE]:
             self.slash()
+
+    def strife(self, dt):
+        lateral = pygame.Vector2(0,1).rotate(self.rotation + 90)
+        self.position += lateral * PLAYER_SPEED * dt
 
 
     def move(self, dt):
