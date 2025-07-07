@@ -1,7 +1,6 @@
 import pygame
 import moderngl
 from pygame.typing import Point, SequenceLike
-import bezier
 import numpy as np
 from circleshape import CircleShape
 from constants import *
@@ -12,6 +11,12 @@ class Player(CircleShape):
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0
         self.shot_cd = 0
+        self.momentum = 0
+        self.previous_position = pygame.Vector2() # previous dt position
+        self.past_position = pygame.Vector2() # previous dt position
+        self.acceleration = 1.1
+        self.grip = 0.5
+        self.mass = 100
 
     # in the player class
     def triangle(self):
@@ -24,32 +29,19 @@ class Player(CircleShape):
     
     def draw(self, surf):
         pygame.draw.polygon(surf, (255, 255, 255), self.triangle(), 2)
-        points = self.bezier_coords(5.1, 0.01)
-        surf.set_at(points[1], (255, 0, 255))
-        surf.set_at(points[3], (0, 255, 0))
 
+    def slip(self, prev, curr, dt):
+        # forward = pygame.Vector2(0, 1).rotate(self.rotation)
+        future_position = linear_movement(curr, self.rotation, dt)
+        vec1 = prev - curr
+        vec2 = prev - future_position
 
-    def bezier_coords(self, eval, dt):
-        forward = pygame.Vector2(0, 1).rotate(self.rotation)
-        right = pygame.Vector2(0, 1).rotate(self.rotation + 90) * self.radius / 1.5
-        future_scale = 1
-        angle = 275
-        distance = dt # 2*pi
-        current_pos = self.position
-        future_pos = current_pos + forward * PLAYER_SPEED * dt * future_scale
-        triangle_pos = pygame.Vector2(self.position.x + distance * np.cos(angle), self.position.y + distance * np.sin(angle))
-        
-        nodes = np.asfortranarray([
-                                  [self.position.x, triangle_pos.x, future_pos.x],
-                                  [self.position.y, triangle_pos.y, future_pos.y],
-        ])
+        slip_angle = vec1.angle_to(vec2)
 
-        curve = bezier.Curve(nodes, degree=2)
-        
-        new_position = curve.evaluate(eval)
+        # slip should be vector from the current position, at the slip angle multiplied by the momentum which is a decaying velocity
+        slip = self.momentum * pygame.Vector2(0, 1).rotate(self.rotation).rotate(slip_angle)
+        return slip
 
-        res = [pygame.Vector2(current_pos), pygame.Vector2(triangle_pos), pygame.Vector2(future_pos), pygame.Vector2(new_position)]
-        return res
 
     def rotate(self, dt):
         self.rotation += PLAYER_TURN_SPEED * dt
@@ -70,10 +62,36 @@ class Player(CircleShape):
         if keys[pygame.K_SPACE]:
             self.shoot()
 
+        self.move(dt, passive=True)
 
-    def move(self, dt):
-        points = self.bezier_coords(2.1, dt)
-        self.position = pygame.Vector2(points[3])
+
+    def move(self, dt, passive=False):
+        forward = pygame.Vector2(0, 1).rotate(self.rotation)
+        
+        if not passive:
+            self.momentum += self.mass * np.linalg.norm(self.past_position - self.position) * dt
+
+        slip = self.slip(self.previous_position, self.position, dt)
+
+        if np.linalg.norm(slip) < 1:
+            slip = pygame.Vector2(0, 0)
+
+        self.past_position = self.previous_position.copy()
+        self.previous_position = self.position.copy()
+
+        if not passive:
+            self.position += dt * (PLAYER_SPEED + self.momentum) * forward + slip * dt
+        if passive:
+            self.position += dt * slip * self.momentum
+
+        # decay
+        if self.momentum > 0:
+            self.momentum -= self.momentum * dt
+        if self.momentum < 1:
+            self.momentum = 0
+        if self.momentum > 25:
+            self.momentum = 25
+
 
     def shoot(self):
         if self.shot_cd > 0:
@@ -83,3 +101,13 @@ class Player(CircleShape):
             x, y = self.position
             shot = Shot(x, y)
             shot.velocity = pygame.Vector2(0, 1).rotate(self.rotation) * PLAYER_SHOOT_SPEED
+
+
+
+def static_rotation(rotation, dt):
+    return rotation + PLAYER_TURN_SPEED * dt
+
+def linear_movement(position, rotation, dt):
+    towards = pygame.Vector2(0, 1).rotate(static_rotation(rotation, dt))
+    return position + dt * PLAYER_SPEED * towards
+
